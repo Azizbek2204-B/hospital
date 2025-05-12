@@ -1,37 +1,58 @@
-import { BadRequestException, CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Observable } from "rxjs";
+import { Request } from "express";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService:JwtService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
-  canActivate(
-    context: ExecutionContext
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const req = context.switchToHttp().getRequest()
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      throw new UnauthorizedException({message:"Foydalanuvchi authrizationdan o'tmagan"})
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req: Request = context.switchToHttp().getRequest();
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new UnauthorizedException({ message: "Token topilmadi" });
     }
 
-    const bearer = authHeader.split(" ")[0]
-    const token = authHeader.split(" ")[1]
+    const token = authHeader.split(" ")[1];
 
-    if (bearer !=="Bearer" || !token) {
-      throw new UnauthorizedException({message:"Bearer token aniqlanmadi"})
+    const decoded = this.jwtService.decode(token) as any;
+    const role = decoded?.roles?.[0];
+    if (!role) {
+      throw new UnauthorizedException({ message: "Role aniqlanmadi" });
     }
 
-    let user:any
+    const secret = this.getSecretByRole(role);
+
     try {
-      user = this.jwtService.verify(token)
+      const payload = await this.jwtService.verifyAsync(token, { secret });
+      req["user"] = payload;
+      return true;
     } catch (error) {
-
-      throw new BadRequestException({
-        message:"Token noto'g'ri", error:error
-      })
+      throw new UnauthorizedException({ message: "Token yaroqsiz", error });
     }
-    req.user = user
-    return true;
+  }
+
+  private getSecretByRole(role: string): string {
+    switch (role) {
+      case "patient":
+        return process.env.PATIENT_ACCESS_TOKEN_KEY!;
+      case "doctor":
+        return process.env.DOCTOR_ACCESS_TOKEN_KEY!;
+      case "admin":
+        return process.env.STAFF_ACCESS_TOKEN_KEY!;
+      case "superadmin":
+        return process.env.STAFF_ACCESS_TOKEN_KEY!;
+      case "staff":
+        return process.env.STAFF_ACCESS_TOKEN_KEY!;
+      default:
+        throw new UnauthorizedException({ message: "Role yaroqsiz" });
+    }
   }
 }

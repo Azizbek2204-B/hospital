@@ -1,6 +1,17 @@
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
 import { Department } from "../../departments/models/department.model";
+import { Appointment } from "../../appointments/models/appointment.model";
+import { MedicalRecord } from "../../medical-records/models/medical-record.model";
+import { Admission } from "../../admissions/models/admission.model";
 
 interface IDoctorCreationAttr {
   email: string;
@@ -8,6 +19,7 @@ interface IDoctorCreationAttr {
   first_name: string;
   last_name: string;
   phone: string;
+  photo: string;
   department_id: number;
   specialization: string;
   consultation_fee: number;
@@ -15,98 +27,81 @@ interface IDoctorCreationAttr {
   refresh_token?: string;
 }
 
-@Table({ tableName: 'doctors' })
+@Table({ tableName: "doctors" })
 export class Doctor extends Model<Doctor, IDoctorCreationAttr> {
-
-  @ApiProperty({
-    description: 'Unique identifier for the doctor',
-    example: 1,
-  })
+  @ApiProperty({ description: "Unique identifier for the doctor", example: 1 })
   @Column({ type: DataType.BIGINT, autoIncrement: true, primaryKey: true })
   declare id: number;
 
-  @ApiProperty({
-    description: 'Email address of the doctor, must be unique',
-    example: 'doctor@example.com',
-  })
+  @ApiProperty({ description: "Email address", example: "doctor@example.com" })
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   declare email: string;
 
-  @ApiProperty({
-    description: 'Hashed_password for the doctor’s account, should be securely hashed',
-    example: 'Stronghashed_password123',
-  })
+  @ApiProperty({ description: "Hashed password", example: "StrongHashed123" })
   @Column({ type: DataType.STRING, allowNull: false })
   declare hashed_password: string;
 
-  @ApiProperty({
-    description: 'First name of the doctor',
-    example: 'John',
-  })
-  @Column({ type: DataType.STRING })
+  @ApiProperty({ description: "First name", example: "John" })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare first_name: string;
 
-  @ApiProperty({
-    description: 'Last name of the doctor',
-    example: 'Doe',
-  })
-  @Column({ type: DataType.STRING })
+  @ApiProperty({ description: "Last name", example: "Doe" })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare last_name: string;
 
-  @ApiProperty({
-    description: 'Phone number of the doctor',
-    example: '+1234567890',
-  })
-  @Column({ type: DataType.STRING })
+  @ApiProperty({ description: "Phone number", example: "+1234567890" })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare phone: string;
 
-  @ApiProperty({
-    description: 'The ID of the department the doctor belongs to',
-    example: 2,
-  })
+  @ApiProperty({ example: "Photo", description: "Rasm" })
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare photo: string;
+
+  @ApiProperty({ example: 2, description: "Department ID" })
   @ForeignKey(() => Department)
-  @Column({ type: DataType.BIGINT })
+  @Column({ type: DataType.BIGINT, allowNull: false })
   declare department_id: number;
 
-  @ApiProperty({
-    description: 'The department the doctor belongs to',
-    type: () => Department,
-  })
   @BelongsTo(() => Department)
+  @ApiProperty({ type: () => Department })
   declare department: Department;
 
-  @ApiProperty({
-    description: 'The doctor’s area of expertise or specialization',
-    example: 'Cardiology',
-  })
-  @Column({ type: DataType.STRING })
+  @ApiProperty({ description: "Specialization", example: "Cardiology" })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare specialization: string;
 
-  @ApiProperty({
-    description: 'The consultation fee charged by the doctor',
-    example: 100.50,
-  })
-  @Column({ type: DataType.DECIMAL(10, 2) })
+  @ApiProperty({ description: "Consultation fee", example: 100.5 })
+  @Column({ type: DataType.DECIMAL(10, 2), allowNull: false })
   declare consultation_fee: number;
 
-  @ApiProperty({
-    description: 'Indicates whether the doctor is currently active or not',
-    example: true,
-  })
-  @Column({ type: DataType.BOOLEAN, defaultValue: true })
+  @ApiProperty({ description: "Is active", example: true })
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   declare is_active: boolean;
 
   @ApiProperty({
-    description: 'Refresh token for maintaining the session, optional field',
-    example: 'refresh_token_example',
+    description: "Refresh token",
     required: false,
+    example: "refresh_token_sample",
   })
   @Column({ type: DataType.STRING, allowNull: true })
   declare refresh_token: string;
 
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+  @ApiProperty({
+    description: "Activation link UUID",
+    example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
   })
-  declare activation_link: boolean;
+  @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
+  declare activation_link: string;
+
+  @HasMany(() => Appointment)
+  appointments: Appointment[];
+
+  @HasMany(() => MedicalRecord)
+  medicalRecords: MedicalRecord[];
+
+  @HasMany(() => Admission)
+  admissions: Admission[];
+
+  @HasMany(() => Department)
+  departments: Department[];
 }

@@ -12,7 +12,7 @@ export class MediationsService {
   }
 
   findAll() {
-    return this.medicationModel.findAll()
+    return this.medicationModel.findAll({include:{all:true}})
   }
 
   findOne(id: number) {

@@ -1,34 +1,61 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RoomsService } from './rooms.service';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
+import { RoomsService } from "./rooms.service";
+import { CreateRoomDto } from "./dto/create-room.dto";
+import { UpdateRoomDto } from "./dto/update-room.dto";
+import { Roles } from "../common/decorators/roles-auth.decorator";
+import { JwtAuthGuard } from "../common/guard/jwt-auth.guard";
+import { RolesGuard } from "../common/guard/roles.guard";
 
-@Controller('rooms')
+@Controller("rooms")
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
 
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.roomsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.roomsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomsService.update(+id, updateRoomDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.roomsService.remove(+id);
   }
 }

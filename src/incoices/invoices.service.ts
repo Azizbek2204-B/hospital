@@ -14,7 +14,7 @@ export class InvoicesService {
   }
 
   findAll() {
-    return this.invoiceModel.findAll();
+    return this.invoiceModel.findAll({include:{all:true}});
   }
 
   findOne(id: number) {

@@ -3,11 +3,14 @@ import { CreateDepartmentDto } from "./dto/create-department.dto";
 import { UpdateDepartmentDto } from "./dto/update-department.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { Department } from "./models/department.model";
+import { DoctorsService } from "../doctors/doctors.service";
 
 @Injectable()
 export class DepartmentsService {
   constructor(
-    @InjectModel(Department) private readonly departmentModel: typeof Department
+    @InjectModel(Department)
+    private readonly departmentModel: typeof Department,
+    private readonly doctorService: DoctorsService
   ) {}
 
   create(createDepartmentDto: CreateDepartmentDto) {
@@ -15,7 +18,7 @@ export class DepartmentsService {
   }
 
   findAll() {
-    return this.departmentModel.findAll();
+    return this.departmentModel.findAll({include:{all:true}});
   }
 
   findOne(id: number) {
@@ -28,5 +31,12 @@ export class DepartmentsService {
 
   remove(id: number) {
     return this.departmentModel.destroy({ where: { id } });
+  }
+
+  async findAllDoctorCity(name: string) {
+    const city = await this.departmentModel.findOne({ where: { name } });
+    if (city && city.id) {
+      return this.doctorService.findDoctorsByCity(city.id);
+    }
   }
 }

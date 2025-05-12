@@ -47,7 +47,7 @@ export class CreateDoctorDto {
     description: "The ID of the department the doctor will belong to",
     example: 2,
   })
-  @IsNumber()
+  // @IsNumber()
   department_id: number;
 
   @ApiProperty({
@@ -61,14 +61,14 @@ export class CreateDoctorDto {
     description: "The consultation fee charged by the doctor",
     example: 100.5,
   })
-  @IsNumber()
+  // @IsNumber()
   consultation_fee: number;
 
   @ApiProperty({
     description: "Indicates whether the doctor is active or not",
     example: true,
   })
-  @IsBoolean()
+  // @IsBoolean()
   is_active: boolean;
 
   @ApiProperty({

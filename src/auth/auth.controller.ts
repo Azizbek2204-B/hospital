@@ -1,18 +1,37 @@
-import { Body, Controller, Get, Param, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignInDto } from "./dto/sign-in.dto";
 import { Request, Response } from "express";
 import { CreateStaffDto } from "../staff/dto/create-staff.dto";
 import { CreateDoctorDto } from "../doctors/dto/create-doctor.dto";
 import { CreatePatientDto } from "../patients/dto/create-patient.dto";
+import { JwtAuthGuard } from "../common/guard/jwt-auth.guard";
+import { Roles } from "../common/decorators/roles-auth.decorator";
+import { RolesGuard } from "../common/guard/roles.guard";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Roles("superadmin")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Post("sign-up-staff")
-  async signUpStaff(@Body() createStaffDto: CreateStaffDto) {
-    return this.authService.signUpStaff(createStaffDto);
+  @UseInterceptors(FileInterceptor("photo"))
+  async signUpStaff(@Body() createStaffDto: CreateStaffDto, @UploadedFile() photo:any) {
+    return this.authService.signUpStaff(createStaffDto, photo);
   }
 
   @Post("sign-in-staff")
@@ -44,9 +63,13 @@ export class AuthController {
     return this.authService.activateStaff(link);
   }
 
+  @Roles("superadmin", "admin")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Post("sign-up-doctor")
-  async signUpDoctor(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.authService.signUpDoctor(createDoctorDto);
+  @UseInterceptors(FileInterceptor("photo"))
+  async signUpDoctor(@Body() createDoctorDto: CreateDoctorDto, @UploadedFile() photo:any) {
+    return this.authService.signUpDoctor(createDoctorDto, photo);
   }
 
   @Post("sign-in-doctor")
@@ -78,9 +101,13 @@ export class AuthController {
     return this.authService.activateDoctor(link);
   }
 
+  @Roles("superadmin", "admin", "doctor")
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Post("sign-up-patient")
-  async signUpPatient(@Body() createPatientDto: CreatePatientDto) {
-    return this.authService.signUpPatient(createPatientDto);
+  @UseInterceptors(FileInterceptor("photo"))
+  async signUpPatient(@Body() createPatientDto: CreatePatientDto, @UploadedFile() photo:any) {
+    return this.authService.signUpPatient(createPatientDto, photo);
   }
 
   @Post("sign-in-patient")

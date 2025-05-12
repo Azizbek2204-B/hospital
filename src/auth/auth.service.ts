@@ -15,6 +15,7 @@ import { CreatePatientDto } from "../patients/dto/create-patient.dto";
 import { PatientsService } from "../patients/patients.service";
 import { DoctorsService } from "../doctors/doctors.service";
 import { CreateDoctorDto } from "../doctors/dto/create-doctor.dto";
+import { FileService } from "../file/file.service";
 
 @Injectable()
 export class AuthService {
@@ -23,28 +24,9 @@ export class AuthService {
     private readonly staffService: StaffService,
     private readonly mailService: EmailService,
     private readonly patientService: PatientsService,
-    private readonly doctorService: DoctorsService
+    private readonly doctorService: DoctorsService,
+    private readonly fileService: FileService
   ) {}
-
-  async generateToken(user: any) {
-    const payload = {
-      id: user.id,
-      email: user.email,
-      hashed_password: user.hashed_password,
-      is_active: user.is_active,
-    };
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret: process.env.ACCESS_TOKEN_KEY,
-        expiresIn: process.env.ACCESS_TOKEN_TIME,
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: process.env.REFRESH_TOKEN_KEY,
-        expiresIn: process.env.REFRESh_TOKEN_TIME,
-      }),
-    ]);
-    return { accessToken, refreshToken };
-  }
 
   async generateTokenStaff(user: any) {
     const payload = {
@@ -52,22 +34,22 @@ export class AuthService {
       email: user.email,
       hashed_password: user.hashed_password,
       is_active: user.is_active,
-      roles:[user.role]
+      roles: [user.role],
     };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: process.env.ACCESS_TOKEN_KEY,
-        expiresIn: process.env.ACCESS_TOKEN_TIME,
+        secret: process.env.STAFF_ACCESS_TOKEN_KEY,
+        expiresIn: process.env.STAFF_ACCESS_TOKEN_TIME,
       }),
       this.jwtService.signAsync(payload, {
-        secret: process.env.REFRESH_TOKEN_KEY,
-        expiresIn: process.env.REFRESh_TOKEN_TIME,
+        secret: process.env.STAFF_REFRESH_TOKEN_KEY,
+        expiresIn: process.env.STAFF_REFRESH_TOKEN_TIME,
       }),
     ]);
     return { accessToken, refreshToken };
   }
 
-  async signUpStaff(createPatientDto: CreateStaffDto) {
+  async signUpStaff(createPatientDto: CreateStaffDto, img:any) {
     const doctor = await this.staffService.findByEmail(createPatientDto.email);
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
@@ -76,8 +58,9 @@ export class AuthService {
       createPatientDto.hashed_password,
       7
     );
+    
     createPatientDto.hashed_password = hashed_password;
-    const newStaff = await this.staffService.create(createPatientDto);
+    const newStaff = await this.staffService.create(createPatientDto, img);
     try {
       await this.mailService.sendMailStaff(newStaff);
     } catch (error) {
@@ -128,7 +111,7 @@ export class AuthService {
     let staffId: number;
     try {
       const payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.STAFF_REFRESH_TOKEN_KEY,
       });
       staffId = payload.id;
     } catch (error) {
@@ -153,7 +136,7 @@ export class AuthService {
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.STAFF_REFRESH_TOKEN_KEY,
       });
     } catch (error) {
       throw new UnauthorizedException("Token noto‘g‘ri yoki muddati tugagan");
@@ -172,7 +155,7 @@ export class AuthService {
       throw new UnauthorizedException("Token mos emas");
     }
 
-    const tokens = await this.generateToken(staff);
+    const tokens = await this.generateTokenStaff(staff);
     staff.refresh_token = await bcrypt.hash(tokens.refreshToken, 7);
     await staff.save();
 
@@ -205,19 +188,35 @@ export class AuthService {
     };
   }
 
-  async signUpPatient(createPatientDto: CreatePatientDto) {
+  async generateTokenPatient(user: any) {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      hashed_password: user.hashed_password,
+      is_active: user.is_active,
+      roles: ["patient"],
+    };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: process.env.PATIENT_ACCESS_TOKEN_KEY,
+        expiresIn: process.env.PATIENT_ACCESS_TOKEN_TIME,
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: process.env.PATIENT_REFRESH_TOKEN_KEY,
+        expiresIn: process.env.PATIENT_REFRESH_TOKEN_TIME,
+      }),
+    ]);
+    return { accessToken, refreshToken };
+  }
+
+  async signUpPatient(createPatientDto: CreatePatientDto, img:any) {
     const doctor = await this.patientService.findByEmail(
       createPatientDto.email
     );
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
     }
-    const hashed_password = await bcrypt.hash(
-      createPatientDto.hashed_password,
-      7
-    );
-    createPatientDto.hashed_password = hashed_password;
-    const newPatient = await this.patientService.create(createPatientDto);
+    const newPatient = await this.patientService.create(createPatientDto, img);
     try {
       await this.mailService.sendMailPatient(newPatient);
     } catch (error) {
@@ -243,7 +242,8 @@ export class AuthService {
       throw new UnauthorizedException("Email yoki password noto'g'ri2");
     }
 
-    const { accessToken, refreshToken } = await this.generateToken(doctor);
+    const { accessToken, refreshToken } =
+      await this.generateTokenPatient(doctor);
 
     res.cookie("refresh_token", refreshToken, {
       maxAge: Number(process.env.COOKIE_TIME),
@@ -269,7 +269,7 @@ export class AuthService {
     let patientId: number;
     try {
       const payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.PATIENT_REFRESH_TOKEN_KEY,
       });
       patientId = payload.id;
     } catch (error) {
@@ -294,7 +294,7 @@ export class AuthService {
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.PATIENT_REFRESH_TOKEN_KEY,
       });
     } catch (error) {
       throw new UnauthorizedException("Token noto‘g‘ri yoki muddati tugagan");
@@ -313,7 +313,7 @@ export class AuthService {
       throw new UnauthorizedException("Token mos emas");
     }
 
-    const tokens = await this.generateToken(patient);
+    const tokens = await this.generateTokenPatient(patient);
     patient.refresh_token = await bcrypt.hash(tokens.refreshToken, 7);
     await patient.save();
 
@@ -346,7 +346,28 @@ export class AuthService {
     };
   }
 
-  async signUpDoctor(createDoctorDto: CreateDoctorDto) {
+  async generateTokenDoctor(user: any) {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      hashed_password: user.hashed_password,
+      is_active: user.is_active,
+      roles: ["doctor"],
+    };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: process.env.DOCTOR_ACCESS_TOKEN_KEY,
+        expiresIn: process.env.DOCTOR_ACCESS_TOKEN_TIME,
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: process.env.DOCTOR_REFRESH_TOKEN_KEY,
+        expiresIn: process.env.DOCTOR_REFRESH_TOKEN_TIME,
+      }),
+    ]);
+    return { accessToken, refreshToken };
+  }
+
+  async signUpDoctor(createDoctorDto: CreateDoctorDto, img:any) {
     const doctor = await this.doctorService.findByEmail(createDoctorDto.email);
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
@@ -356,7 +377,7 @@ export class AuthService {
       7
     );
     createDoctorDto.hashed_password = hashed_password;
-    const newDoctor = await this.doctorService.create(createDoctorDto);
+    const newDoctor = await this.doctorService.create(createDoctorDto, img);
     try {
       await this.mailService.sendMailDoctor(newDoctor);
     } catch (error) {
@@ -382,7 +403,8 @@ export class AuthService {
       throw new UnauthorizedException("Email yoki password noto'g'ri2");
     }
 
-    const { accessToken, refreshToken } = await this.generateToken(doctor);
+    const { accessToken, refreshToken } =
+      await this.generateTokenDoctor(doctor);
 
     res.cookie("refresh_token", refreshToken, {
       maxAge: Number(process.env.COOKIE_TIME),
@@ -408,7 +430,7 @@ export class AuthService {
     let doctorId: number;
     try {
       const payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.DOCTOR_REFRESH_TOKEN_KEY,
       });
       doctorId = payload.id;
     } catch (error) {
@@ -433,7 +455,7 @@ export class AuthService {
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
+        secret: process.env.DOCTOR_REFRESH_TOKEN_KEY,
       });
     } catch (error) {
       throw new UnauthorizedException("Token noto‘g‘ri yoki muddati tugagan");
@@ -452,7 +474,7 @@ export class AuthService {
       throw new UnauthorizedException("Token mos emas");
     }
 
-    const tokens = await this.generateToken(doctor);
+    const tokens = await this.generateTokenDoctor(doctor);
     doctor.refresh_token = await bcrypt.hash(tokens.refreshToken, 7);
     await doctor.save();
 

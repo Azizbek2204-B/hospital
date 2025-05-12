@@ -2,9 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   Column,
   DataType,
+  HasMany,
   Model,
   Table,
 } from "sequelize-typescript";
+import { Admission } from "../../admissions/models/admission.model";
 
 interface IRoomCreationAttr {
   id: number;
@@ -53,4 +55,7 @@ export class Room extends Model<Room, IRoomCreationAttr> {
     allowNull: false,
   })
   declare rate_per_day: number;
+
+  @HasMany(()=>Admission)
+  admission:Admission[]
 }

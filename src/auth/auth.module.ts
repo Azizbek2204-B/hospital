@@ -6,9 +6,14 @@ import { StaffModule } from "../staff/staff.module";
 import { MailModule } from "../mail/mail.module";
 import { PatientsModule } from "../patients/patients.module";
 import { DoctorsModule } from "../doctors/doctors.module";
+import { ConfigModule } from "@nestjs/config";
+import { FileModule } from "../file/file.module";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     JwtModule.register({
       global: true,
       secret: process.env.SECRET_KEY,
@@ -17,7 +22,8 @@ import { DoctorsModule } from "../doctors/doctors.module";
     StaffModule,
     MailModule,
     PatientsModule,
-    DoctorsModule
+    DoctorsModule,
+    FileModule
   ],
   controllers: [AuthController],
   providers: [AuthService],

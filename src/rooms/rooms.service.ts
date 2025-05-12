@@ -12,7 +12,7 @@ export class RoomsService {
   }
 
   findAll() {
-    return this.roomModel.findAll();
+    return this.roomModel.findAll({include:{all:true}});
   }
 
   findOne(id: number) {

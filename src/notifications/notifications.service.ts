@@ -15,7 +15,7 @@ export class NotificationsService {
   }
 
   findAll() {
-    return this.notificationModel.findAll();
+    return this.notificationModel.findAll({include:{all:true}});
   }
 
   findOne(id: number) {

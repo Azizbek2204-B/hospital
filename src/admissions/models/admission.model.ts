@@ -1,5 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import {
+  Column,
+  DataType,
+  Model,
+  Table,
+  ForeignKey,
+  BelongsTo,
+} from "sequelize-typescript";
+import { Doctor } from "../../doctors/models/doctor.model";
+import { Room } from "../../rooms/models/room.model";
+import { Patient } from "../../patients/models/patient.model";
 
 interface IAdmissionCreationAttr {
   patient_id: number;
@@ -12,33 +22,33 @@ interface IAdmissionCreationAttr {
 @Table({ tableName: 'admissions' })
 export class Admission extends Model<Admission, IAdmissionCreationAttr> {
 
-  @ApiProperty({
-    description: 'Unique identifier for the admission',
-    example: 1,
-  })
+  @ApiProperty({ description: 'Unique identifier for the admission', example: 1 })
   @Column({ type: DataType.BIGINT, autoIncrement: true, primaryKey: true })
   declare id: number;
 
-  @ApiProperty({
-    description: 'ID of the patient associated with the admission',
-    example: 123,
-  })
+  @ApiProperty({ description: 'ID of the patient associated with the admission', example: 123 })
+  @ForeignKey(() => Patient)
   @Column({ type: DataType.BIGINT })
   declare patient_id: number;
 
-  @ApiProperty({
-    description: 'ID of the room assigned to the patient during admission',
-    example: 5,
-  })
+  @BelongsTo(() => Patient)
+  patient: Patient;
+
+  @ApiProperty({ description: 'ID of the room assigned to the patient during admission', example: 5 })
+  @ForeignKey(() => Room)
   @Column({ type: DataType.BIGINT })
   declare room_id: number;
 
-  @ApiProperty({
-    description: 'ID of the doctor responsible for the admission',
-    example: 101,
-  })
+  @BelongsTo(() => Room)
+  room: Room;
+
+  @ApiProperty({ description: 'ID of the doctor responsible for the admission', example: 101 })
+  @ForeignKey(() => Doctor)
   @Column({ type: DataType.BIGINT })
   declare doctor_id: number;
+
+  @BelongsTo(() => Doctor)
+  doctor: Doctor;
 
   @ApiProperty({
     description: 'The date when the patient was admitted',

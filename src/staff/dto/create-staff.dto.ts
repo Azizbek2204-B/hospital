@@ -2,7 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   IsBoolean,
   IsEmail,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPhoneNumber,
@@ -39,14 +38,14 @@ export class CreateStaffDto {
     example: "+998901234567",
     description: "Phone number of the staff member",
   })
-  @IsPhoneNumber()
+  // @IsPhoneNumber()
   phone: string;
 
   @ApiProperty({
     example: 2,
     description: "ID of the department the staff belongs to",
   })
-  @IsNumber()
+  // @IsNumber()
   department_id: number;
 
   @ApiProperty({
@@ -56,15 +55,18 @@ export class CreateStaffDto {
   @IsString()
   role: string;
 
+  @ApiProperty({ example: "Photo", description: "Rasm" })
+  declare photo: string;
+
   @ApiProperty({ example: 1200.5, description: "Monthly salary in USD" })
-  @IsNumber()
+  // @IsNumber()
   salary: number;
 
   @ApiProperty({
     example: true,
     description: "Whether the staff member is currently active",
   })
-  @IsBoolean()
+  // @IsBoolean()
   is_active: boolean;
 
   @ApiProperty({

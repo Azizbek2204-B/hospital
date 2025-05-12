@@ -1,26 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { Prescription } from './models/prescription.model';
 
 @Injectable()
 export class PrescriptionsService {
+  constructor(@InjectModel(Prescription) private readonly prescriptionModel: typeof Prescription){}
   create(createPrescriptionDto: CreatePrescriptionDto) {
-    return 'This action adds a new prescription';
+    return this.prescriptionModel.create(createPrescriptionDto)
   }
 
   findAll() {
-    return `This action returns all prescriptions`;
+    return this.prescriptionModel.findAll({include:{all:true}})
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} prescription`;
+    return this.prescriptionModel.findByPk(id)
   }
 
   update(id: number, updatePrescriptionDto: UpdatePrescriptionDto) {
-    return `This action updates a #${id} prescription`;
+    return this.prescriptionModel.update(updatePrescriptionDto, {where:{id}})
   }
 
   remove(id: number) {
-    return `This action removes a #${id} prescription`;
+    return this.prescriptionModel.destroy({where:{id}})
   }
 }

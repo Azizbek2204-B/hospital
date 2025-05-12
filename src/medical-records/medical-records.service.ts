@@ -8,11 +8,11 @@ import { MedicalRecord } from './models/medical-record.model';
 export class MedicalRecordsService {
   constructor(@InjectModel(MedicalRecord) private readonly medicalRecordModel:typeof MedicalRecord){}
   create(createMedicalRecordDto: CreateMedicalRecordDto) {
-    return this.medicalRecordModel,this.create(createMedicalRecordDto)
+    return this.medicalRecordModel.create(createMedicalRecordDto)
   }
 
   findAll() {
-    return this.medicalRecordModel.findAll()
+    return this.medicalRecordModel.findAll({include:{all:true}})
   }
 
   findOne(id: number) {

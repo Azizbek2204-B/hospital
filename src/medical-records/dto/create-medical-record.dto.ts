@@ -28,5 +28,5 @@ export class CreateMedicalRecordDto {
     example: "Acute Bronchitis",
   })
   @IsString()
-  diagnost: string;
+  diagnosis: string;
 }

@@ -68,7 +68,7 @@ export class CreatePatientDto {
     description: "Indicates if the patient is active",
     example: true,
   })
-  @IsBoolean()
+  // @IsBoolean()
   is_active: boolean;
 
   @ApiProperty({

@@ -32,5 +32,5 @@ export class UpdateMedicalRecordDto extends PartialType(
     example: "Acute Bronchitis",
   })
   @IsString()
-  diagnost: string;
+  diagnosis: string;
 }

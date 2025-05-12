@@ -12,7 +12,7 @@ export class AdmissionsService {
   }
 
   findAll() {
-    return this.admissionsModel.findAll()
+    return this.admissionsModel.findAll({include:{all:true}})
   }
 
   findOne(id: number) {
