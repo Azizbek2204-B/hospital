@@ -17,8 +17,8 @@ export class DoctorsService {
     @InjectModel(Doctor) private readonly doctorModel: typeof Doctor,
     private readonly fileService: FileService
   ) {}
-  async create(createDoctorDto: CreateDoctorDto, img:any) {
-    const fileName = await this.fileService.saveFile(img)
+  async create(createDoctorDto: CreateDoctorDto, photo:any) {
+    const fileName = await this.fileService.saveFile(photo)
     return this.doctorModel.create({...createDoctorDto, photo:fileName});
   }
 

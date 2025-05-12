@@ -30,7 +30,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post("sign-up-staff")
   @UseInterceptors(FileInterceptor("photo"))
-  async signUpStaff(@Body() createStaffDto: CreateStaffDto, @UploadedFile() photo:any) {
+  async signUpStaff(
+    @Body() createStaffDto: CreateStaffDto,
+    @UploadedFile() photo: any
+  ) {
     return this.authService.signUpStaff(createStaffDto, photo);
   }
 
@@ -68,7 +71,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post("sign-up-doctor")
   @UseInterceptors(FileInterceptor("photo"))
-  async signUpDoctor(@Body() createDoctorDto: CreateDoctorDto, @UploadedFile() photo:any) {
+  async signUpDoctor(
+    @Body() createDoctorDto: CreateDoctorDto,
+    @UploadedFile() photo: any
+  ) {
     return this.authService.signUpDoctor(createDoctorDto, photo);
   }
 
@@ -101,12 +107,12 @@ export class AuthController {
     return this.authService.activateDoctor(link);
   }
 
-  @Roles("superadmin", "admin", "doctor")
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
   @Post("sign-up-patient")
   @UseInterceptors(FileInterceptor("photo"))
-  async signUpPatient(@Body() createPatientDto: CreatePatientDto, @UploadedFile() photo:any) {
+  async signUpPatient(
+    @Body() createPatientDto: CreatePatientDto,
+    @UploadedFile() photo: any
+  ) {
     return this.authService.signUpPatient(createPatientDto, photo);
   }
 

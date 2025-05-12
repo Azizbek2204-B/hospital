@@ -24,7 +24,6 @@ export class InsuranceDetailsController {
 
   @Roles("patient")
   @UseGuards(RolesGuard)
-  @UseGuards(JwtSelfGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createInsuranceDetailDto: CreateInsuranceDetailDto) {

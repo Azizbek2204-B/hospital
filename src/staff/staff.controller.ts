@@ -13,10 +13,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 
-  @Roles("superadmin")
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtActiveGuard)
-  @UseGuards(JwtAuthGuard)
+  // @Roles("superadmin")
+  // @UseGuards(RolesGuard)
+  // @UseGuards(JwtActiveGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor("photo"))
   create(@Body() createStaffDto: CreateStaffDto,@UploadedFile() photo:any) {

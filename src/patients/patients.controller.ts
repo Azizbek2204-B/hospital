@@ -26,8 +26,6 @@ import { FileInterceptor } from "@nestjs/platform-express";
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
-  @Roles("superadmin")
-  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor("photo"))
   create(@Body() createPatientDto: CreatePatientDto, @UploadedFile() photo:any) {

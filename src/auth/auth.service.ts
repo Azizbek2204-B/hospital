@@ -49,18 +49,13 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async signUpStaff(createPatientDto: CreateStaffDto, img:any) {
+  async signUpStaff(createPatientDto: CreateStaffDto, photo:any) {
     const doctor = await this.staffService.findByEmail(createPatientDto.email);
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
     }
-    const hashed_password = await bcrypt.hash(
-      createPatientDto.hashed_password,
-      7
-    );
     
-    createPatientDto.hashed_password = hashed_password;
-    const newStaff = await this.staffService.create(createPatientDto, img);
+    const newStaff = await this.staffService.create(createPatientDto, photo);
     try {
       await this.mailService.sendMailStaff(newStaff);
     } catch (error) {
@@ -209,14 +204,14 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async signUpPatient(createPatientDto: CreatePatientDto, img:any) {
+  async signUpPatient(createPatientDto: CreatePatientDto, photo:any) {
     const doctor = await this.patientService.findByEmail(
       createPatientDto.email
     );
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
     }
-    const newPatient = await this.patientService.create(createPatientDto, img);
+    const newPatient = await this.patientService.create(createPatientDto, photo);
     try {
       await this.mailService.sendMailPatient(newPatient);
     } catch (error) {
@@ -367,7 +362,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async signUpDoctor(createDoctorDto: CreateDoctorDto, img:any) {
+  async signUpDoctor(createDoctorDto: CreateDoctorDto, photo:any) {
     const doctor = await this.doctorService.findByEmail(createDoctorDto.email);
     if (doctor) {
       throw new BadRequestException("Bunday emailli foydalanuvchi mavjud");
@@ -377,7 +372,7 @@ export class AuthService {
       7
     );
     createDoctorDto.hashed_password = hashed_password;
-    const newDoctor = await this.doctorService.create(createDoctorDto, img);
+    const newDoctor = await this.doctorService.create(createDoctorDto, photo);
     try {
       await this.mailService.sendMailDoctor(newDoctor);
     } catch (error) {

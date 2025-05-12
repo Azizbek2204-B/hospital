@@ -4,6 +4,7 @@ import { UpdateStaffDto } from "./dto/update-staff.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { Staff } from "./models/staff.model";
 import { FileService } from "../file/file.service";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class StaffService {
@@ -11,10 +12,16 @@ export class StaffService {
     @InjectModel(Staff) private readonly staffModel: typeof Staff,
     private readonly fileService: FileService
   ) {}
-  async create(createStaffDto: CreateStaffDto, photo:any) {
-    const fileName = await this.fileService.saveFile(photo)
+  async create(createStaffDto: CreateStaffDto, photo: any) {
+    const fileName = await this.fileService.saveFile(photo);
+    const hashed_password = await bcrypt.hash(
+      createStaffDto.hashed_password,
+      7
+    );
+
+    createStaffDto.hashed_password = hashed_password;
     console.log(photo);
-    return this.staffModel.create({...createStaffDto, photo:fileName});
+    return this.staffModel.create({ ...createStaffDto, photo: fileName });
   }
 
   findAll() {
